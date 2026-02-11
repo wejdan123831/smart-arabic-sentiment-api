@@ -1,0 +1,10 @@
+.venv
+__pycache__
+*.pyc
+.git
+.gitignore
+uv.lock
+*.xlsx
+*.csv
+node_modules
+frontend
