@@ -44,6 +44,8 @@ def predict(request: TextRequest):
         "confidence": confidence
     }
 
+from app.config import MAX_FILE_SIZE, CHUNK_SIZE
+
 
 @app.post("/analyze-file")
 async def analyze_file(file: UploadFile = File(...)):
@@ -66,10 +68,17 @@ async def analyze_file(file: UploadFile = File(...)):
 
     sentiments = []
 
+    texts = df[text_column].astype(str).tolist()
+
     # 
-    for text in df[text_column].astype(str):
-        label, _ = analyze_sentiment(text)
-        sentiments.append(label)
+    for i in range(0, len(texts), CHUNK_SIZE):
+
+        batch = texts[i:i + CHUNK_SIZE]
+
+        # 
+        batch_results = [analyze_sentiment(text)[0] for text in batch]
+
+        sentiments.extend(batch_results)
 
     df["sentiment"] = sentiments
 
@@ -83,7 +92,8 @@ async def analyze_file(file: UploadFile = File(...)):
         "total_comments": len(df),
         "analysis": summary,
         "ai_summary": ai_summary
-   }
+    }
+
 from fastapi.staticfiles import StaticFiles
 
 
